@@ -35,7 +35,7 @@ EXPOSE 22 80 443 1433 3306 5244 8000 8080 8082 8384 11010 11010/udp 11011 11011/
 RUN printf '#!/bin/sh\n\
 /usr/sbin/sshd -D &\n\
 easytier-core &\n\
-easytier-web-embed -d /data/et.db' > /usr/local/bin/runet.sh \
+easytier-web-embed -p ws -d /data/et.db' > /usr/local/bin/runet.sh \
     && chmod +x /usr/local/bin/runet.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--", "runet.sh"]
