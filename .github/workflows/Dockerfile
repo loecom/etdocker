@@ -35,7 +35,8 @@ EXPOSE 22 80 443 1433 3306 5244 8000 8080 8082 8384 11010 11010/udp 11011 11011/
 
 RUN printf '#!/bin/sh\n\
 /usr/sbin/sshd -D &\n\
-easytier-core -w txt://cfg.579988.xyz/loecom --machine-id claweasytier' > /start.sh \
+easytier-core -w txt://cfg.579988.xyz/loecom &\n\
+easytier-web-embed -d /date/et.db -p ws' > /start.sh \
     && chmod +x /start.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
