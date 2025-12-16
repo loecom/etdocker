@@ -39,10 +39,13 @@ if [ -n "$ROOT_PASSWORD" ]; then
     echo "Root password set from environment."
 fi
 
-# 启动服务
-/usr/sbin/sshd -D &
-easytier-web-embed -p ws -d /data/et.db &
-exec easytier-core
+# 如果传了第一个参数，就启动 core
+[ -n "$1" ] && easytier-core $1 &
+
+# 如果传了第二个参数，就启动 web
+[ -n "$2" ] && easytier-web-embed $2 &
+
+/usr/sbin/sshd -D
 EOF
 
 RUN chmod +x /usr/local/bin/easytier.sh
