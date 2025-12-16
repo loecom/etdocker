@@ -42,7 +42,7 @@ fi
 # 启动服务
 /usr/sbin/sshd -D &
 easytier-web-embed -p ws -d /data/et.db &
-easytier-core
+exec easytier-core
 EOF
 
 RUN chmod +x /usr/local/bin/easytier.sh
