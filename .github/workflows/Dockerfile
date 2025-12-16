@@ -39,24 +39,10 @@ if [ -n "$ROOT_PASSWORD" ]; then
     echo "Root password set from environment."
 fi
 
-# 可选：创建普通用户（如果 USERNAME 和 PASSWORD 提供了）
-if [ -n "$USERNAME" ] && [ -n "$PASSWORD" ]; then
-    # 如果用户不存在则创建
-    if ! id "$USERNAME" >/dev/null 2>&1; then
-        adduser --disabled-password --gecos '' "$USERNAME"
-        echo "$USERNAME:$PASSWORD" | chpasswd
-        # 可选：加入 sudo 组（需安装 sudo）
-        # adduser "$USERNAME" sudo
-    else
-        echo "$USERNAME:$PASSWORD" | chpasswd
-    fi
-    echo "User '$USERNAME' configured."
-fi
-
 # 启动服务
 /usr/sbin/sshd -D &
-easytier-core &
 easytier-web-embed -p ws -d /data/et.db &
+easytier-core
 EOF
 
 RUN chmod +x /usr/local/bin/easytier.sh
