@@ -44,17 +44,17 @@ if [ "$WEB_RUN" = "norun" ]; then
     echo "easytier-web-embed disabled."
 else
     if [ -n "${WEB_ARGS:-}" ]; then
-        eval "easytier-web-embed $WEB_ARGS" &
+        eval "/usr/local/bin/easytier-web-embed $WEB_ARGS" &
     else
-        easytier-web-embed &
+        /usr/local/bin/easytier-web-embed &
     fi
     PIDS="$!"
 fi
 
 if [ -n "${CORE_ARGS:-}" ]; then
-    eval "easytier-core $CORE_ARGS" &
+    eval "/usr/local/bin/easytier-core $CORE_ARGS" &
 else
-    easytier-core &
+    /usr/local/bin/easytier-core &
 fi
 CORE_PID=$!
 PIDS="$PIDS $CORE_PID"
@@ -71,4 +71,4 @@ EOF
 
 RUN chmod +x /usr/local/bin/easytier.sh
 
-ENTRYPOINT ["/sbin/tini", "--", "easytier.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/easytier.sh"]
