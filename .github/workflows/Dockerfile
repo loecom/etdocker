@@ -30,39 +30,35 @@ ENV TZ Asia/Shanghai
 EXPOSE 22 80 443 1433 3306 5244 8000 8080 8082 8384 11010 11010/udp 11011 11011/udp 11012 11211 22020 22020/udp
 
 RUN cat > /usr/local/bin/easytier.sh <<'EOF'
-#!/bin/sh
+#!/bin/bash
 set -e
 
-# 设置 root 密码（如果 ROOT_PASSWORD 环境变量存在）
 if [ -n "$ROOT_PASSWORD" ]; then
     echo "root:$ROOT_PASSWORD" | chpasswd
     echo "Root password set from environment."
 fi
 
-# 处理 easytier-core
-if [ "$1" = "norun" ]; then
-    echo "easytier-core disabled by 'norun'."
-elif [ -z "$1" ]; then
-    echo "Starting easytier-core with no arguments..."
+# Core
+if [ "$CORE_RUN" = "norun" ]; then
+    echo "easytier-core disabled."
+elif [ -n "$CORE_ARGS" ]; then
+    echo "Starting easytier-core with CORE_ARGS..."
+    eval "easytier-core $CORE_ARGS" &
+else
     easytier-core &
-else
-    echo "Starting easytier-core with argument: $1"
-    easytier-core "$1" &
 fi
 
-# 处理 easytier-web-embed
-if [ "$2" = "norun" ]; then
-    echo "easytier-web-embed disabled by 'norun'."
-elif [ -z "$2" ]; then
-    echo "Starting easytier-web-embed with no arguments..."
+# Web
+if [ "$WEB_RUN" = "norun" ]; then
+    echo "easytier-web-embed disabled."
+elif [ -n "$WEB_ARGS" ]; then
+    echo "Starting easytier-web-embed with WEB_ARGS..."
+    eval "easytier-web-embed $WEB_ARGS" &
+else
     easytier-web-embed &
-else
-    echo "Starting easytier-web-embed with argument: $2"
-    easytier-web-embed "$2" &
 fi
 
-# 启动 SSH daemon（前台运行）
-/usr/sbin/sshd -D
+exec /usr/sbin/sshd -D
 EOF
 
 RUN chmod +x /usr/local/bin/easytier.sh
