@@ -39,12 +39,29 @@ if [ -n "$ROOT_PASSWORD" ]; then
     echo "Root password set from environment."
 fi
 
-# 如果传了第一个参数，就启动 core
-[ -n "$1" ] && easytier-core $1 &
+# 处理 easytier-core
+if [ "$1" = "norun" ]; then
+    echo "easytier-core disabled by 'norun'."
+elif [ -z "$1" ]; then
+    echo "Starting easytier-core with no arguments..."
+    easytier-core &
+else
+    echo "Starting easytier-core with argument: $1"
+    easytier-core "$1" &
+fi
 
-# 如果传了第二个参数，就启动 web
-[ -n "$2" ] && easytier-web-embed $2 &
+# 处理 easytier-web-embed
+if [ "$2" = "norun" ]; then
+    echo "easytier-web-embed disabled by 'norun'."
+elif [ -z "$2" ]; then
+    echo "Starting easytier-web-embed with no arguments..."
+    easytier-web-embed &
+else
+    echo "Starting easytier-web-embed with argument: $2"
+    easytier-web-embed "$2" &
+fi
 
+# 启动 SSH daemon（前台运行）
 /usr/sbin/sshd -D
 EOF
 
