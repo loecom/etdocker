@@ -40,7 +40,7 @@ set -eu
 
 PIDS=""
 
-if [ "$WEB_RUN" = "norun" ]; then
+if [ "$WEB_ARGS" = "norun" ]; then
     echo "easytier-web-embed disabled."
 else
     if [ -n "${WEB_ARGS:-}" ]; then
