@@ -35,50 +35,37 @@ ENV TZ Asia/Shanghai
 EXPOSE 11010/tcp 11010/udp 11011/tcp 11011/udp 11012/tcp 11211/tcp 22020/tcp 22020/udp
 
 RUN cat > /usr/local/bin/easytier.sh <<'EOF'
-#!/bin/bash
-set -euo pipefail
+#!/bin/sh
+set -eu
 
-# 存储子进程 PID
 PIDS=""
 
-# 启动 web（如果需要）
 if [ "$WEB_RUN" = "norun" ]; then
     echo "easytier-web-embed disabled."
 else
     if [ -n "${WEB_ARGS:-}" ]; then
-        echo "Starting easytier-web-embed with WEB_ARGS: $WEB_ARGS"
         eval "easytier-web-embed $WEB_ARGS" &
     else
         easytier-web-embed &
     fi
-    PIDS="$PIDS $!"
+    PIDS="$!"
 fi
 
-# 启动 core（前台运行）
 if [ -n "${CORE_ARGS:-}" ]; then
-    echo "Starting easytier-core with CORE_ARGS: $CORE_ARGS"
-    CORE_CMD="easytier-core $CORE_ARGS"
+    eval "easytier-core $CORE_ARGS" &
 else
-    CORE_CMD="easytier-core"
+    easytier-core &
 fi
-
-# 启动 core 并捕获其 PID
-eval "$CORE_CMD" &
 CORE_PID=$!
 PIDS="$PIDS $CORE_PID"
 
-# 清理函数：杀死所有子进程
 cleanup() {
-    echo "Shutting down processes..."
     kill $PIDS 2>/dev/null
     wait $PIDS 2>/dev/null
     exit 0
 }
 
-# 捕获 SIGTERM / SIGINT
-trap cleanup SIGTERM SIGINT
-
-# 等待 core 进程结束（主进程不能退出！）
+trap cleanup TERM INT
 wait $CORE_PID
 EOF
 
