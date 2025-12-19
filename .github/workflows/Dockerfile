@@ -24,7 +24,9 @@ RUN ARTIFACT_ARCH=""; \
 
 FROM base
 
-RUN apk add --no-cache tzdata tini
+RUN apk add --no-cache tzdata tini openssh-server && ssh-keygen -A && mkdir -p /run/sshd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 WORKDIR /app
 COPY --from=builder --chmod=755 /tmp/output/* /usr/local/bin
 
@@ -36,15 +38,12 @@ EXPOSE 11010/tcp 11010/udp 11011/tcp 11011/udp 11012/tcp 11211/tcp 22020/tcp 220
 
 RUN cat > /usr/local/bin/easytier.sh <<'EOF'
 #!/bin/bash
-# Core
-if [ "$CORE_RUN" = "norun" ]; then
-    echo "easytier-core disabled."
-elif [ -n "$CORE_ARGS" ]; then
-    echo "Starting easytier-core with CORE_ARGS..."
-    eval "easytier-core $CORE_ARGS"
-else
-    easytier-core
+set -e
+if [ -n "$ROOT_PASSWORD" ]; then
+    echo "root:$ROOT_PASSWORD" | chpasswd
+    echo "Root password set from environment."
 fi
+
 # Web
 if [ "$WEB_RUN" = "norun" ]; then
     echo "easytier-web-embed disabled."
@@ -54,6 +53,17 @@ elif [ -n "$WEB_ARGS" ]; then
 else
     easytier-web-embed &
 fi
+
+# Core
+if [ "$CORE_RUN" = "norun" ]; then
+    echo "easytier-core disabled."
+elif [ -n "$CORE_ARGS" ]; then
+    echo "Starting easytier-core with CORE_ARGS..."
+    eval "easytier-core $CORE_ARGS" &
+else
+    easytier-core &
+fi
+sshd
 EOF
 
 RUN chmod +x /usr/local/bin/easytier.sh
